@@ -1,23 +1,21 @@
 import numpy as np
 
-
 def calc(df):
     data_size = len(df.values)
     dic = {}
     for data in df.values:
-        if data[len(data) - 1] in dic:
-            dic[data[len(data) - 1]] += 1
+        if data[len(data)-1] in dic:
+            dic[data[len(data)-1]] += 1
         else:
             dic[data[len(data) - 1]] = 1
 
     value = 1
     for i in range(len(dic)):
-        p = list(dic.values())[i] / data_size
+        p = list(dic.values())[i]/data_size
         p_squared = p ** 2
         value -= p_squared
 
     return value
-
 
 def find_test_attribute(df):
     attributes = df.columns
@@ -25,7 +23,7 @@ def find_test_attribute(df):
     data_size = len(data_set)
     compare_value_list = []
     compare_df_list_list = []
-    for i in range(len(attributes) - 1):
+    for i in range(len(attributes)-1):
 
         attribute_values = []
         for value in df.values:

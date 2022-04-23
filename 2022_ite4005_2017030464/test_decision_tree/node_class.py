@@ -4,21 +4,19 @@ import gini
 import info
 import gain_ratio
 
-
 class Node:
     def __init__(self, test_attribute=None, cf_attribute_value=None, class_value=None):
         # 뭘로 나뉠 건가
         self.test_attribute = test_attribute
         # 나뉘고 난 뒤 해당하는 값이 뭔가
         self.cf_attribute_value = cf_attribute_value
-        # 클래스 레이블의 값이 뭔가
+        # 클래스 레이블의 값이 뭔가 (리프노드라면)
         self.class_value = class_value
         # 자식노드정보
         self.childnodes = []
 
     def make_tree(self, df, cf_attribute_value, measure):
         self.cf_attribute_value = cf_attribute_value
-        calc_value = 0
         if measure == 'gini':
             calc_value = gini.calc(df)
         elif measure == 'gain_ratio':
@@ -35,9 +33,16 @@ class Node:
         maxindex = np.argmax(list(dic.values()))
         self.class_value = list(dic.keys())[maxindex]
         if calc_value == 0 or len(df.columns) == 2:
+            dic = {}
+            for data in df.values:
+                if data[len(data) - 1] in dic:
+                    dic[data[len(data) - 1]] += 1
+                else:
+                    dic[data[len(data) - 1]] = 1
+
+            maxindex = np.argmax(list(dic.values()))
+            self.class_value = list(dic.keys())[maxindex]
             return self
-        test_attribute = ''
-        cf_df_list = []
         if measure == 'gini':
             test_attribute, cf_df_list = gini.find_test_attribute(df)
         elif measure == 'gain_ratio':
@@ -49,13 +54,19 @@ class Node:
         for cf_df in cf_df_list:
             cf_df_cf_attribute_value = cf_df[test_attribute].values[0]
             del cf_df[test_attribute]
-            child_node = Node()
-            child_node = child_node.make_tree(cf_df, cf_df_cf_attribute_value, measure)
-            self.childnodes.append(child_node)
+            if len(cf_df.values)/1500 <= 0.0000000000000000000000000000000001:
+                print(cf_df)
+                continue
+            else:
+                child_node = Node()
+                child_node = child_node.make_tree(cf_df, cf_df_cf_attribute_value, measure)
+                self.childnodes.append(child_node)
         return self
 
     def mining(self, test_data, attributes, measure):
+        print(self.test_attribute, end = ' ')
         if len(self.childnodes) == 0:
+            print("leafnode_search : " + self.class_value, end=' ')
             test_data[len(test_data)-1] = self.class_value
             return test_data
         else:
@@ -72,3 +83,4 @@ class Node:
                             return test_data
                     test_data[len(test_data) - 1] = self.class_value
                     return test_data
+
