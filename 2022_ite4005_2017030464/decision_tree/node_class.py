@@ -33,6 +33,15 @@ class Node:
         maxindex = np.argmax(list(dic.values()))
         self.class_value = list(dic.keys())[maxindex]
         if calc_value == 0 or len(df.columns) == 2:
+            dic = {}
+            for data in df.values:
+                if data[len(data) - 1] in dic:
+                    dic[data[len(data) - 1]] += 1
+                else:
+                    dic[data[len(data) - 1]] = 1
+
+            maxindex = np.argmax(list(dic.values()))
+            self.class_value = list(dic.keys())[maxindex]
             return self
         if measure == 'gini':
             test_attribute, cf_df_list = gini.find_test_attribute(df)
@@ -45,13 +54,19 @@ class Node:
         for cf_df in cf_df_list:
             cf_df_cf_attribute_value = cf_df[test_attribute].values[0]
             del cf_df[test_attribute]
-            child_node = Node()
-            child_node = child_node.make_tree(cf_df, cf_df_cf_attribute_value, measure)
-            self.childnodes.append(child_node)
+            if len(cf_df.values)/1500 <= 0.0000000000000000000000000000000001:
+                print(cf_df)
+                continue
+            else:
+                child_node = Node()
+                child_node = child_node.make_tree(cf_df, cf_df_cf_attribute_value, measure)
+                self.childnodes.append(child_node)
         return self
 
     def mining(self, test_data, attributes, measure):
+        print(self.test_attribute, end = ' ')
         if len(self.childnodes) == 0:
+            print("leafnode_search : " + self.class_value, end=' ')
             test_data[len(test_data)-1] = self.class_value
             return test_data
         else:

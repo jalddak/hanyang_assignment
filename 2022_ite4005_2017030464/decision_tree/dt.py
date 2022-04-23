@@ -120,9 +120,15 @@ def main():
     result_file_gini.close()
     result_file_gain_ratio.close()
     result_file_info.close()
-    gini_value = check(args[2], 'gini')
-    gain_ratio_value = check(args[2], 'gain_ratio')
-    info_value = check(args[2], 'info')
+    gini_value, gini_test_data = check(args[2], 'gini')
+
+    print(gini_test_data, len(gini_test_data))
+    for test_data in gini_test_data:
+        dt_gini.mining(test_data, training_attributes, 'gini')
+        print()
+
+    gain_ratio_value, gini_test_data = check(args[2], 'gain_ratio')
+    info_value, gini_test_data = check(args[2], 'info')
     values = [gini_value, gain_ratio_value, info_value]
     print(values)
     maxindex = np.argmax(list(values))
@@ -207,14 +213,19 @@ def check(result_file_name, measure):
     result_data_set = result_df.values
 
     value = 0
+    test_data = []
     for i in range(len(result_data_set)):
         if result_data_set[i].all() == answer_data_set[i].all():
             value += 1
+        else:
+            test_data.append(result_data_set[i])
+    test_data = np.array(test_data)
+
 
     answer_file.close()
     result_file.close()
 
-    return value
+    return value,test_data
 
 
 # Press the green button in the gutter to run the script.
