@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 
 def calc(df):
@@ -9,11 +11,11 @@ def calc(df):
         else:
             dic[data[len(data) - 1]] = 1
 
-    value = 1
+    value = 0
     for i in range(len(dic)):
         p = list(dic.values())[i]/data_size
-        p_squared = p ** 2
-        value -= p_squared
+        log_2 = math.log(p, 2)
+        value -= p * log_2
 
     return value
 

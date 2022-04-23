@@ -1,21 +1,55 @@
-def calc(data_set_dic):
-    data_set = []
-    for data_dic in data_set_dic:
-        data_set.append(list(data_dic.values()))
+import math
+
+import numpy as np
+
+def calc(df):
+    data_size = len(df.values)
     dic = {}
-    data_size = 0
-    for data in data_set:
+    for data in df.values:
         if data[len(data)-1] in dic:
             dic[data[len(data)-1]] += 1
         else:
             dic[data[len(data) - 1]] = 1
-        data_size += 1
-    print(dic)
 
-    value = 1
+    value = 0
     for i in range(len(dic)):
         p = list(dic.values())[i]/data_size
-        p_squared = p ** 2
-        value -= p_squared
-        print(p)
-        print(p_squared)
+        log_2 = math.log(p, 2)
+        value -= p * log_2
+
+    return value
+
+def find_test_attribute(df):
+    attributes = df.columns
+    data_set = df.values
+    data_size = len(data_set)
+    compare_value_list = []
+    compare_df_list_list = []
+    for i in range(len(attributes)-1):
+
+        attribute_values = []
+        for value in df.values:
+            if value[i] not in attribute_values:
+                attribute_values.append(value[i])
+
+        compare_df_list = []
+        for value in attribute_values:
+            compare_df_list.append(df.loc[df[attributes[i]] == value, :])
+
+        calc_result = 0
+        split_info = 0
+        for compare_df in compare_df_list:
+            calc_result += (len(compare_df.values) / data_size) * calc(compare_df)
+            p = len(compare_df.values) / data_size
+            log_2 = math.log(p, 2)
+            split_info -= p * log_2
+        compare_value_list.append(calc_result / split_info)
+        compare_df_list_list.append(compare_df_list)
+
+    minindex = np.argmin(compare_value_list)
+
+    # print(compare_value_list)
+    # print(attributes[minindex])
+    # print(compare_df_list_list[minindex])
+
+    return attributes[minindex], compare_df_list_list[minindex]

@@ -1,0 +1,15 @@
+age	Class:buys_computer
+<=30	no
+<=30	no
+31...40	yes
+>40	yes
+>40	yes
+>40	no
+31...40	yes
+<=30	no
+<=30	yes
+>40	yes
+<=30	yes
+31...40	yes
+31...40	yes
+>40	no
