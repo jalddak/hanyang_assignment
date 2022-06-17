@@ -33,6 +33,7 @@ def main():
         output.write(str(p.uid) + '\t')
         output.write(str(p.iid) + '\t')
         output.write(str(round(p.est)) + '\n')
+        output.write(str(p.est) + '\n')
     output.close()
 
 
