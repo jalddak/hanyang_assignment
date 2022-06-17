@@ -89,6 +89,7 @@ def main():
     print("output_write_start")
     output = open('./data/' + base_name + "_prediction.txt", 'w', encoding='utf-8')
     for t in test_data.values:
+        predict = cf_result.loc[t[0], t[1]]
         output.write(str(t[0]) + '\t')
         output.write(str(t[1]) + '\t')
         output.write(str(predict) + '\n')
