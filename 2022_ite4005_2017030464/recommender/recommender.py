@@ -4,8 +4,8 @@ import sys
 from sklearn.metrics import mean_squared_error
 
 
-def check_rmse(R, U, I, non_zeros):
-    pred_R = np.dot(U, I.T)
+def check_rmse(R, U, I, non_zeros, b_U, b_I, mean):
+    pred_R = mean + b_U[:, np.newaxis] + b_I[np.newaxis, :] + np.dot(U, I.T)
 
     users = [non_zero[0] for non_zero in non_zeros]
     items = [non_zero[1] for non_zero in non_zeros]
@@ -37,21 +37,33 @@ def after_matrix_factorization(table):
     # R > 0 인 행 위치, 열 위치, 값을 non_zeros 리스트에 저장.
     non_zeros = [(i, j, R[i, j]) for i in range(num_users) for j in range(num_items) if R[i, j] > 0]
 
+    # 편향 추가
+    b_U = np.zeros(num_users)
+    b_I = np.zeros(num_items)
+    mean = np.mean(R[np.where(R > 0)])
+
     learning_rate = 0.01
     # 람다 값 1~0.001까지 해봤는데 1은 영 아니고, 0.1~0.001 까진 비슷한 결과나왔다. 그래서 중간인 0.01 정도로 세팅했다.
     lambda_ = 0.01
 
     # SGD 기법으로 P와 Q 매트릭스를 계속 업데이트.
     count = 0
+    iter = 0
     before_rmse = 0
-    while count < 3:
+    while count < 3 and iter < 50:
+        iter += 1
         for user, item, rating in non_zeros:
             # 실제 값과 예측 값의 차이인 오류 값 구함
-            eui = rating - np.dot(U[user, :], I[item, :].T)
-            U[user, :] = U[user, :] + learning_rate * (eui * I[item, :] - lambda_ * U[user, :])
-            I[item, :] = I[item, :] + learning_rate * (eui * U[user, :] - lambda_ * I[item, :])
+            pred_R = mean + b_U[user] + b_I[item] + np.dot(U[user, :], I[item, :].T)
+            error = rating - pred_R
 
-        rmse = check_rmse(R, U, I, non_zeros)
+            b_U[user] += learning_rate * (error - lambda_ * b_U[user])
+            b_I[item] += learning_rate * (error - lambda_ * b_I[item])
+            U[user, :] += learning_rate * (error * I[item, :] - lambda_ * U[user, :])
+            I[item, :] += learning_rate * (error * U[user, :] - lambda_ * I[item, :])
+
+        rmse = check_rmse(R, U, I, non_zeros, b_U, b_I, mean)
+        print(str(iter) + " times MF's rmse: " + str(rmse))
         # 처음엔 그냥 한번만이라도 rmse 가 전과 0.001 이하로 차이나면, 이후의 차이도 비슷하다고 가정하고 그냥 멈췄는데,
         # zero_injection을 수행하는 과정에서 초반에 0.001 이하로 차이나는 경우가 생겨서 바로 끝나버려 제대로 된 예측을 시작하기전에
         # 끝나버려서 기회를 3번정도 더 주는 것으로 코드 수정함.
@@ -60,7 +72,8 @@ def after_matrix_factorization(table):
         if before_rmse != 0 and before_rmse - rmse < 0.001:
             count += 1
         before_rmse = rmse
-    pred_matrix = np.dot(U, I.T)
+    print("MF was performed " + str(iter) + " times.")
+    pred_matrix = mean + b_U[:, np.newaxis] + b_I[np.newaxis, :] + np.dot(U, I.T)
 
     return pred_matrix
 
