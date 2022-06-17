@@ -1,0 +1,17 @@
+    # 실험 - base엔 없고 test에만 있는 자료들 각 평균값으로 넣어주는 방법
+    base_user = base_data['user_id']
+    base_item = base_data['item_id']
+    base_user = set(base_user)
+    base_item = set(base_item)
+    test_user = test_data['user_id']
+    test_item = test_data['item_id']
+    test_user = set(test_user)
+    test_item = set(test_item)
+    not_in_base_user = test_user - base_user
+    not_in_base_item = test_item - base_item
+    user_mean_values = np.nanmean(rating_table.values, axis=0)
+    item_mean_values = np.nanmean(rating_table.values, axis=1)
+    for user in not_in_base_user:
+        rating_table.loc[user, :] = user_mean_values
+    for item in not_in_base_item:
+        rating_table[item] = item_mean_values
