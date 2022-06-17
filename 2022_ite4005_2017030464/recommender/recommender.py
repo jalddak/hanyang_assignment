@@ -89,16 +89,6 @@ def main():
     print("output_write_start")
     output = open('./data/' + base_name + "_prediction.txt", 'w', encoding='utf-8')
     for t in test_data.values:
-        predict = cf_result.loc[t[0], t[1]]
-        if predict > 5:
-            predict = 5
-        elif predict < 1 or predict == np.nan:
-            if (cf_result[t[1]].sum() / len(cf_result)) > 0.5:
-                predict = 1
-            # else의 경우는 아예 새로운 데이터 였을 경우라고 생각했다. 그럴 경우, 거의 모든 값이 0보다 작은 값인 것 같다.
-            else:
-                select = base_data.loc[base_data['user_id'] == t[0]]
-                predict = int((select['rating'].sum() / len(select)).round())
         output.write(str(t[0]) + '\t')
         output.write(str(t[1]) + '\t')
         output.write(str(predict) + '\n')
